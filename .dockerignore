@@ -1,0 +1,8 @@
+.dockerignore
+.git
+.gitignore
+Dockerfile
+vendor/
+*.md
+bin/
+tmp/

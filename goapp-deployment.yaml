@@ -1,0 +1,64 @@
+# goapp-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: task-scheduler
+spec:
+  replicas: 3  # 启动3个Pod副本
+  selector:
+    matchLabels:
+      app: task-scheduler
+  template:
+    metadata:
+      labels:
+        app: task-scheduler
+    spec:
+      containers:
+        - name: scheduler
+          image: yleoer/k8s-redis-scheduler:latest
+          env:
+            - name: HOSTNAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: REDIS_ADDR
+              value: "redis-service:6379"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          ports:
+            - containerPort: 8080
+              name: healthcheck
+          restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: scheduler-service
+spec:
+  selector:
+    app: redis-scheduler
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
