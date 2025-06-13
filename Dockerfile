@@ -18,7 +18,7 @@ ARG VERSION=1.0.0
 ENV CGO_ENABLED=0
 
 # 构建应用 (设置-ldflags参数减小二进制大小)
-RUN go build -v -ldflags="-w -s -X main.BuildVersion=$VERSION" -o scheduler main.go
+RUN go build -v -ldflags="-w -s -X main.BuildVersion=$VERSION" -o scheduler .
 
 # 第二阶段：创建最小化运行时镜像
 FROM alpine:3.18
